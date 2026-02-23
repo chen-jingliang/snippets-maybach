@@ -6,14 +6,14 @@ export default {
     if (url.pathname === '/api/ipapi') {
       const ip = url.searchParams.get('q');
       const apiUrl = `https://api.ipapi.is${ip ? `?q=${ip}` : ''}`;
-      
+
       try {
         const response = await fetch(apiUrl, {
           headers: {
             'Accept': 'application/json',
           },
         });
-        
+
         const data = await response.json();
         return new Response(JSON.stringify(data), {
           headers: {
@@ -121,7 +121,7 @@ function renderHtml(initData) {
     <script type="text/babel" data-presets="react">
       const { useState, useEffect, useCallback } = React;
       const { createRoot } = ReactDOM;
-      
+
       // 简化图标实现，避免依赖 lucide-react
       const ShieldCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>;
       const Github = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>;
@@ -143,7 +143,9 @@ function renderHtml(initData) {
         cloudflare: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23F48120' d='M35.1 14.8c-1.1 0-2.1.3-3.1.8-1.4-5.2-6.2-9-11.8-9-5.9 0-10.9 4.2-12.1 9.8C3.5 17 0 21.6 0 27s3.5 10 8.1 10.5h26.8c7.2 0 13.1-5.9 13.1-13.1 0-5.2-3-9.7-7.5-11.9-.6.2-1.1.3-1.7.3z'/%3E%3Cpath fill='%23F48120' d='M28.8 13.8c.8 0 1.6.1 2.3.4C29.7 9.9 25.4 6.8 20.2 6.8c-5.5 0-10.1 3.6-11.6 8.6 2.8-.8 5.8-1.3 9-1.3 4.2-.1 8.2.9 11.2 2.7z'/%3E%3C/svg%3E",
         ipsb: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M2 12h20'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E",
         chatgpt: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310a37f'%3E%3Cpath d='M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.0462 6.0462 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.3829a.071.071 0 0 1-.038-.052V2.7482a4.4992 4.4992 0 0 1 4.4945 4.4944v5.8403a.7853.7853 0 0 0-.3832-.6813l-.2399-.6498zM6.803 3.3029l2.0201-1.1685a.0757.0757 0 0 1 .071 0l4.8303 2.7865a4.504 4.504 0 0 1 2.1461 3.8257l-.1466-.0852-4.783-2.7629a.7759.7759 0 0 0-.7854 0L4.3126 9.267V6.9346a.0804.0804 0 0 1 .0332-.0615l4.9522-3.2902a4.485 4.485 0 0 1-2.495 3.72zm8.1174 9.3485a4.4992 4.4992 0 0 1-6.1408 1.6511l-.1466-.0852 4.783-2.7582a.7759.7759 0 0 0 .3927-.6813v-6.7369l2.0201-1.1685a.0757.0757 0 0 1 .071 0l4.8303 2.7865a4.504 4.504 0 0 1-2.1461 3.8257zM11.9996 11.9996a1.1685 1.1685 0 1 1 1.1685-1.1685 1.1685 1.1685 0 0 1-1.1685 1.1685z'/%3E%3C/svg%3E",
-        openai: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.0462 6.0462 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.3829a.071.071 0 0 1-.038-.052V2.7482a4.4992 4.4992 0 0 1 4.4945 4.4944v5.8403a.7853.7853 0 0 0-.3832-.6813l-.2399-.6498zM6.803 3.3029l2.0201-1.1685a.0757.0757 0 0 1 .071 0l4.8303 2.7865a4.504 4.504 0 0 1 2.1461 3.8257l-.1466-.0852-4.783-2.7629a.7759.7759 0 0 0-.7854 0L4.3126 9.267V6.9346a.0804.0804 0 0 1 .0332-.0615l4.9522-3.2902a4.485 4.485 0 0 1-2.495 3.72zm8.1174 9.3485a4.4992 4.4992 0 0 1-6.1408 1.6511l-.1466-.0852 4.783-2.7582a.7759.7759 0 0 0 .3927-.6813v-6.7369l2.0201-1.1685a.0757.0757 0 0 1 .071 0l4.8303 2.7865a4.504 4.504 0 0 1-2.1461 3.8257zM11.9996 11.9996a1.1685 1.1685 0 1 1 1.1685-1.1685 1.1685 1.1685 0 0 1-1.1685 1.1685z'/%3E%3C/svg%3E",
+        xcom: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z'/%3E%3C/svg%3E",
+        openai: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.0462 6.0462 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.3829v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zM11.9996 11.9996a1.1685 1.1685 0 1 1 1.1685-1.1685 1.1685 1.1685 0 0 1-1.1685 1.1685z'/%3E%3C/svg%3E",
+        grok: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 509.641' fill-rule='evenodd' clip-rule='evenodd'%3E%3Cpath d='M115.612 0h280.776C459.975 0 512 52.026 512 115.612v278.416c0 63.587-52.025 115.613-115.612 115.613H115.612C52.026 509.641 0 457.615 0 394.028V115.612C0 52.026 52.026 0 115.612 0z'/%3E%3Cpath fill='%23fff' d='M213.235 306.019l178.976-180.002v.169l51.695-51.763c-.924 1.32-1.86 2.605-2.785 3.89-39.281 54.164-58.46 80.649-43.07 146.922l-.09-.101c10.61 45.11-.744 95.137-37.398 131.836-46.216 46.306-120.167 56.611-181.063 14.928l42.462-19.675c38.863 15.278 81.392 8.57 111.947-22.03 30.566-30.6 37.432-75.159 22.065-112.252-2.92-7.025-11.67-8.795-17.792-4.263l-124.947 92.341zm-25.786 22.437l-.033.034L68.094 435.217c7.565-10.429 16.957-20.294 26.327-30.149 26.428-27.803 52.653-55.359 36.654-94.302-21.422-52.112-8.952-113.177 30.724-152.898 41.243-41.254 101.98-51.661 152.706-30.758 11.23 4.172 21.016 10.114 28.638 15.639l-42.359 19.584c-39.44-16.563-84.629-5.299-112.207 22.313-37.298 37.308-44.84 102.003-1.128 143.81z'/%3E%3C/svg%3E",
         ipapi: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='2' width='20' height='20' rx='5' ry='5'/%3E%3Cpath d='M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0'/%3E%3C/svg%3E"
       };
 
@@ -508,21 +510,18 @@ function renderHtml(initData) {
         return (
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col">
             <div className="p-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 {sourceIcon ? (
-                  <img src={sourceIcon} alt={sourceName} className="w-6 h-6 rounded-md shadow-sm object-cover" />
+                  <img src={sourceIcon} alt={sourceName} className="w-5 h-5 rounded-md object-cover" />
                 ) : (
-                  <div className="w-6 h-6 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
+                  <div className="w-5 h-5 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
                     {sourceName.substring(0, 2).toUpperCase()}
                   </div>
                 )}
-                <div className="flex flex-col">
-                  <h3 className="font-semibold text-slate-800 text-sm">{sourceName}</h3>
-                  <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-slate-400 hover:text-indigo-500 flex items-center gap-1 truncate max-w-[150px]">
-                      {new URL(sourceUrl).hostname}
-                      <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
+                <h3 className="font-semibold text-slate-800 text-sm">{sourceName}</h3>
+                <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-500 transition">
+                    <ExternalLink className="w-3.5 h-3.5" />
+                </a>
               </div>
               {isLoading && <RefreshCcw className="w-4 h-4 text-indigo-400 animate-spin" />}
             </div>
@@ -559,13 +558,6 @@ function renderHtml(initData) {
                           {isp}
                       </div>
                   )}
-
-                  <div className="mt-4 pt-4 border-t border-slate-100 w-full">
-                      <button onClick={() => onViewDetails(ip)} className="w-full py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition flex items-center justify-center gap-2">
-                          <Search className="w-4 h-4" />
-                          风险分析
-                      </button>
-                  </div>
                 </div>
               )}
             </div>
@@ -589,10 +581,36 @@ function renderHtml(initData) {
             return { error: '连接超时或被拦截' };
           }
         },
-        // 改回直接请求 OpenAI 官方接口
+        // X.com (Twitter) Cloudflare Trace
+        fetchXcom: async () => {
+          try {
+            const res = await fetchWithTimeout('https://help.x.com/cdn-cgi/trace');
+            if (!res.ok) throw new Error('网络响应错误');
+            const text = await res.text();
+            const ip = text.match(/ip=([^\\n]+)/)?.[1] || '-';
+            const country = text.match(/loc=([^\\n]+)/)?.[1] || '-';
+            return { ip, countryCode: country, countryName: country, error: undefined };
+          } catch (e) {
+            return { error: '连接超时或被拦截' };
+          }
+        },
+        // OpenAI Cloudflare Trace
         fetchOpenAI: async () => {
           try {
             const res = await fetchWithTimeout('https://openai.com/cdn-cgi/trace');
+            if (!res.ok) throw new Error('网络响应错误');
+            const text = await res.text();
+            const ip = text.match(/ip=([^\\n]+)/)?.[1] || '-';
+            const country = text.match(/loc=([^\\n]+)/)?.[1] || '-';
+            return { ip, countryCode: country, countryName: country, error: undefined };
+          } catch (e) {
+            return { error: '连接超时或被拦截' };
+          }
+        },
+        // Grok Cloudflare Trace
+        fetchGrok: async () => {
+          try {
+            const res = await fetchWithTimeout('https://grok.com/cdn-cgi/trace');
             if (!res.ok) throw new Error('网络响应错误');
             const text = await res.text();
             const ip = text.match(/ip=([^\\n]+)/)?.[1] || '-';
@@ -688,16 +706,30 @@ function renderHtml(initData) {
           },
           {
             id: 'chatgpt',
-            sourceName: 'ChatGPT',
+            sourceName: 'chatgpt.com',
             sourceUrl: 'https://chatgpt.com',
             sourceIcon: ICONS.chatgpt,
             ip: '加载中...', isp: '-', countryCode: '', countryName: '...', isLoading: true,
           },
           {
+            id: 'xcom',
+            sourceName: 'X.com',
+            sourceUrl: 'https://x.com',
+            sourceIcon: ICONS.xcom,
+            ip: '加载中...', isp: '-', countryCode: '', countryName: '...', isLoading: true,
+          },
+          {
             id: 'openai',
-            sourceName: 'OpenAI',
+            sourceName: 'openai.com',
             sourceUrl: 'https://openai.com',
             sourceIcon: ICONS.openai,
+            ip: '加载中...', isp: '-', countryCode: '', countryName: '...', isLoading: true,
+          },
+          {
+            id: 'grok',
+            sourceName: 'grok.com',
+            sourceUrl: 'https://grok.com',
+            sourceIcon: ICONS.grok,
             ip: '加载中...', isp: '-', countryCode: '', countryName: '...', isLoading: true,
           }
         ]);
@@ -718,7 +750,9 @@ function renderHtml(initData) {
           ipService.fetchIpSbV6().then((data) => updateRow('ipv6', data));
           ipService.fetchIpApi().then((data) => updateRow('ipapi', data));
           ipService.fetchChatGPT().then((data) => updateRow('chatgpt', data));
+          ipService.fetchXcom().then((data) => updateRow('xcom', data));
           ipService.fetchOpenAI().then((data) => updateRow('openai', data));
+          ipService.fetchGrok().then((data) => updateRow('grok', data));
         }, [updateRow]);
 
         useEffect(() => {
@@ -753,7 +787,7 @@ function renderHtml(initData) {
                   <h1 className="text-xl font-bold text-slate-900 tracking-tight">IP 哨兵</h1>
                 </div>
                 <div className="flex items-center gap-4">
-                   <a href="https://github.com" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-800 transition">
+                   <a href="https://github.com/jy02739245/workers-vless/tree/main/other" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-slate-800 transition">
                       <Github className="w-5 h-5" />
                    </a>
                 </div>
@@ -768,7 +802,7 @@ function renderHtml(initData) {
                   </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {rows.map((row) => (
                   <StatusCard
                     key={row.id}
@@ -781,7 +815,9 @@ function renderHtml(initData) {
                         if (row.id === 'ipv6') ipService.fetchIpSbV6().then(d => updateRow('ipv6', d));
                         if (row.id === 'ipapi') ipService.fetchIpApi().then(d => updateRow('ipapi', d));
                         if (row.id === 'chatgpt') ipService.fetchChatGPT().then(d => updateRow('chatgpt', d));
+                        if (row.id === 'xcom') ipService.fetchXcom().then(d => updateRow('xcom', d));
                         if (row.id === 'openai') ipService.fetchOpenAI().then(d => updateRow('openai', d));
+                        if (row.id === 'grok') ipService.fetchGrok().then(d => updateRow('grok', d));
                     }}
                   />
                 ))}
