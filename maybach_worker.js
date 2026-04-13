@@ -1,10 +1,16 @@
+/**
+ * Date: 2026-04-13
+ * Version: 1.0.0
+ * Description: Personal Extreme Node - Direct DMA Engine (BYOB Zero-Copy) with Dynamic Proxy IP
+ */
+
 import { connect as $c } from 'cloudflare:sockets';
 const _ = o => $c(o);
 
 // ================= 个人极速满血配置 =================
-const UUID = "12345678-1234-4123-8234-123456789abc"; 
+const UUID = "00000000-0000-4000-b000-000000000000"; 
 
-let PIP = 'ProxyIP.US.cmliussss.net';  // 支持多IP逗号分隔，并结合 Colo 就近路由
+let PIP = 'ProxyIP.CMLiussss.net';  // 默认内置兜底 ProxyIP，支持自动识别 Colo
 let SUB = 'sub.cmliussss.net';  
 let SUBAPI = 'https://subapi.cmliussss.net';  
 let SUBINI = 'https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_Full_MultiMode.ini'; 
@@ -61,6 +67,7 @@ export default {
             }
             
             const { proxyIP: p_ip, s5, enableSocks: es, globalProxy: gp } = parsePC(u.pathname);
+            // 优先使用路径 /p= 动态传入的 IP，如果没有则使用兜底 activePip
             const finalPIP = p_ip || (activePip ? pAddrPt(activePip) : null);
 
             let cR, ws, cWS, cW, res;
@@ -94,7 +101,7 @@ export default {
 const handleProxyEngine = (cR, ws, cWS, cW, isWS, pip, s5, es, gp) => {
     let rW = null, isDNS = false, dW = null;
 
-    // 【极限重构】：零拷贝上传指针队列 (Zero-Copy Upload Queue)
+    // 零拷贝上传指针队列 (Zero-Copy Upload Queue)
     const upQ = [];
     let upWriting = false;
     const processUpQueue = async () => {
@@ -102,9 +109,9 @@ const handleProxyEngine = (cR, ws, cWS, cW, isWS, pip, s5, es, gp) => {
         upWriting = true;
         try {
             while (upQ.length > 0) {
-                if (upQ.length > 1024) { ws.close(1011); break; } // 防止恶意发包导致的 OOM 背压斩断
+                if (upQ.length > 1024) { ws.close(1011); break; }
                 await rW.write(upQ[0]);
-                upQ.shift(); // 写完再丢弃指针，零内存复制
+                upQ.shift(); 
             }
         } catch (e) { if (isWS) ws.close(1011); }
         upWriting = false;
@@ -114,7 +121,6 @@ const handleProxyEngine = (cR, ws, cWS, cW, isWS, pip, s5, es, gp) => {
         async write(data) {
             if (isDNS) return dW?.write(data).catch(() => {});
             
-            // 走原生指针队列
             if (rW) {
                 upQ.push(data);
                 processUpQueue();
@@ -183,20 +189,15 @@ const handleProxyEngine = (cR, ws, cWS, cW, isWS, pip, s5, es, gp) => {
             if (!isWS) {
                 sock.readable.pipeTo(cWS).catch(()=>{});
             } else {
-                // 【极限重构】：开启 BYOB (Bring Your Own Buffer) 直接内存访问模式
+                // BYOB (Bring Your Own Buffer) 直接内存访问模式
                 const rr = sock.readable.getReader({ mode: "byob" });
-                
-                // 在堆外预分配一块死内存 (128KB 为 TCP 最佳吞吐分片大小)
                 let dmaBuffer = new ArrayBuffer(131072); 
                 
                 (async () => {
                     try {
                         while (true) {
-                            // C++ 底层网卡数据直接灌入 dmaBuffer，绕过 JS 垃圾回收机制
                             const { done, value } = await rr.read(new Uint8Array(dmaBuffer));
                             if (done) break;
-                            
-                            // 回收这块内存的控制权，供下一次循环继续复用
                             dmaBuffer = value.buffer; 
                             
                             if (ws.readyState === 1) ws.send(value);
@@ -212,7 +213,7 @@ const handleProxyEngine = (cR, ws, cWS, cW, isWS, pip, s5, es, gp) => {
     })).catch(()=>{});
 };
 
-// ================= 外壳：核心辅助与路由配置 =================
+// ================= 外壳：核心辅助与动态反代路由解析 =================
 const pAddrPt=s=>{if(s.startsWith("[")){const m=s.match(/^\[(.+?)\]:(\d+)$/);return m?[m[1],Number(m[2])]:[s.slice(1,-1),443];}const i=s.lastIndexOf(':');if(i!==-1&&s.indexOf(':')===i)return[s.slice(0,i),Number(s.slice(i+1))||443];return[s,443];};
 const pS5=(r)=>{
   let u,p,h,pt;
@@ -228,16 +229,29 @@ const pS5=(r)=>{
   }
   if(!h||isNaN(pt))throw new Error("Cfg Err");return{username:u,password:p,hostname:h,port:pt};
 };
+
 function parsePC(p){
   let pip=null,s5=null,es=null,gp=null;
   const gm=p.match(new RegExp(`(${K.SK}5?|https?):\\/\\/([^/#?]+)`,'i'));
   if(gm){gp={type:gm[1].toLowerCase().includes('5')||gm[1].includes(K.SK)?K.S5:'http',cfg:pS5(gm[2])};return{proxyIP:pip,s5,enableSocks:es,globalProxy:gp};}
-  const im=p.match(/(?:^|\/)(?:proxy)?ip[=\/]([^?#]+)/i);
-  if(im){const[a,rt]=pAddrPt(im[1]);pip={address:a.includes('[')?a.slice(1,-1):a,port:+rt};}
+  
+  // 核心变更：全面支持 /p= 动态传入单 IP 或逗号分隔随机池
+  const im=p.match(/(?:^|\/)(?:proxyip|ip|p)[=\/]([^?#\/]+)/i);
+  if(im){
+    let val = im[1];
+    if (val.includes(',')) {
+        const arr = val.split(',');
+        val = arr[Math.floor(Math.random() * arr.length)];
+    }
+    const[a,rt]=pAddrPt(val);
+    pip={address:a.includes('[')?a.slice(1,-1):a,port:+rt};
+  }
+  
   const lm=p.match(new RegExp(`(?:^|\\/)(${K.SK}5?|s5|http)[=\\/]([^/#?]+)`,'i'));
   if(lm){s5=pS5(lm[2]);es=lm[1].toLowerCase().includes('http')?'http':K.S5;}
   return{proxyIP:pip,s5,enableSocks:es,globalProxy:gp};
 }
+
 async function cS5(t,a,p,c){
   const{username:u,password:_pw,hostname:h,port:pt}=c,pw=_pw||'',s=_({hostname:h,port:pt}),w=s.writable.getWriter();
   await w.write(new Uint8Array([5,u?2:1,0,u?2:0]));
@@ -260,7 +274,7 @@ const tC = async (h, p, t, pip, s5, es, gp) => {
   try{ const s=_({hostname:h,port:p});if(s.opened)await s.opened;return s; }catch(e){
     if(!s5&&!pip)throw e;
     if(s5)try{const s=es==='http'?await cH(t,h,p,s5):await cS5(t,h,p,s5);if(s.opened)await s.opened;return s;}catch{}
-    if(pip)try{const s=_({hostname:pip[0],port:pip[1]});if(s.opened)await s.opened;return s;}catch{}
+    if(pip)try{const s=_({hostname:pip.address,port:pip.port});if(s.opened)await s.opened;return s;}catch{}
     throw e;
   }
 };
