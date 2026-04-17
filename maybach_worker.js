@@ -1,14 +1,14 @@
 /**
  * Date: 2026-04-16
- * Version: 2.6.0 (Ultimate Streaming & Video Flow Edition)
- * Description: Removed aggressive stall timeouts to perfectly support bursty chunked video streaming (YouTube 4K/8K). Graceful fallback lets the HTML5 player handle seamless background resuming.
+ * Version: 2.6.1 (Ultimate Streaming & Active Sonar Edition)
+ * Description: Features Smart Active Probing (Sonar) to detect silent disconnects for long-lived WS connections (Gemini/ChatGPT), while remaining perfectly tolerant of YouTube's chunked video buffering.
  */
 
 import { connect as $c } from 'cloudflare:sockets';
 const _ = o => $c(o);
 
 // ================= 个人极速配置 =================
-const UUID = ""; 
+const UUID = "00000000-0000-4000-b000-000000000000"; 
 
 let PIP = 'ProxyIP.CMLiussss.net';  
 let SUB = 'sub.cmliussss.net';  
@@ -51,8 +51,7 @@ class Pool {
     reset = () => { this.ptr = 0; this.pool = []; this.large = false; };
 }
 
-// 【v2.6.0 变更】：移除导致视频假死的 STALL_TO 闲置超时，保留 16MB 背压抵抗大文件下载崩溃
-const MAX_PENDING = 16777216, KEEPALIVE = 30000, MAX_RECONN = 10;
+const MAX_PENDING = 16777216, MAX_RECONN = 10;
 
 export default {
     async fetch(req, env, ctx) {
@@ -69,7 +68,7 @@ export default {
                     if (u.pathname === `/sub` && u.searchParams.get('uuid') !== UUID) return new Response("Invalid", { status: 403 });
                     return await hSub(req, env, u, UA, u.hostname);
                 }
-                return new Response("Video Flow Streaming Engine v2.6.0 Active.", { status: 200 });
+                return new Response("Active Sonar Streaming Engine v2.6.1 Active.", { status: 200 });
             }
 
             if (u.pathname.includes('%3F')) {
@@ -125,6 +124,7 @@ const handleProxyEngine = (cR, ws, cWS, cW, isWS, pip, s5, es, gp) => {
     let stats = { tot: 0, cnt: 0, big: 0, win: 0, ts: Date.now() }; 
     let mode = 'direct', avgSz = 0, tputs = [];
     let isReconnecting = false;
+    let isProbing = false; // 智能探针锁
 
     const updateMode = s => {
         stats.tot += s; stats.cnt++; if (s > 8192) stats.big++; avgSz = avgSz * 0.9 + s * 0.1; const now = Date.now();
@@ -211,13 +211,11 @@ const handleProxyEngine = (cR, ws, cWS, cW, isWS, pip, s5, es, gp) => {
                 } 
                 if (done) { 
                     flush(); reading = false; 
-                    // 彻底下放控制权：正常传输完毕让客户端自行处理续传，不主动盲目重连
                     cleanup(); if(isWS) ws.close(1000); 
                     break; 
                 }
             }
         } catch (e) { 
-            // 真实硬中断时，优雅关闭连接，通知播放器立刻触发断点续传
             flush(); if (bTmr) clearTimeout(bTmr); reading = false; fail++; cleanup(); if(isWS) ws.close(1011); 
         }
     };
@@ -236,7 +234,7 @@ const handleProxyEngine = (cR, ws, cWS, cW, isWS, pip, s5, es, gp) => {
             const bt = pend.splice(0, pend.length); 
             for (const b of bt) { await w.write(b); pendBytes -= b.length; pool.free(b); }
             conn = false; reconns = 0; score = Math.min(1.0, score + 0.15); succ++; lastAct = Date.now(); readLoop();
-        } catch (e) { conn = false; fail++; score = Math.max(0.1, score - 0.2); reconn(); } // 仅在初始连接失败时重试
+        } catch (e) { conn = false; fail++; score = Math.max(0.1, score - 0.2); reconn(); } 
     };
 
     const reconn = async () => {
@@ -270,9 +268,35 @@ const handleProxyEngine = (cR, ws, cWS, cW, isWS, pip, s5, es, gp) => {
         } finally { isReconnecting = false; }
     };
 
+    // ================= 智能主动声呐探测 (Smart Active Probe) =================
     const startTmrs = () => {
-        // 软性长保活，防止某些严格防火墙在静默期断流，但不干涉视频加载逻辑
-        tmrs.ka = setInterval(async () => { if (!conn && w && Date.now() - lastAct > KEEPALIVE) { try { await w.write(new Uint8Array(0)); lastAct = Date.now(); } catch { } } }, KEEPALIVE / 3);
+        tmrs.ka = setInterval(async () => { 
+            // 如果连接未建立、正在重连，或者距离上次有真实数据流动不到 10 秒，则跳过探测
+            if (conn || !w || isReconnecting || Date.now() - lastAct < 10000) return;
+
+            if (isProbing) return;
+            isProbing = true;
+
+            try {
+                // 主动发送 0 字节探针，并设定 3 秒的硬性超时（Race机制）
+                const probePromise = w.write(new Uint8Array(0));
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Probe Timeout')), 3000)
+                );
+
+                await Promise.race([probePromise, timeoutPromise]);
+                
+                // 探测成功：连接依然健康，更新活跃时间避免 CF Worker 强杀
+                lastAct = Date.now(); 
+
+            } catch (err) {
+                // 探测失败（Timeout 或 Error）：捕获到静默断流，立即执行后台无感重连
+                isProbing = false;
+                reconn(); 
+            } finally {
+                isProbing = false;
+            }
+        }, 12000); 
     };
 
     const cleanSock = () => { 
@@ -322,7 +346,6 @@ const handleProxyEngine = (cR, ws, cWS, cW, isWS, pip, s5, es, gp) => {
                     const buf = pool.alloc(data.byteLength); buf.set(new Uint8Array(data)); pend.push(buf); pendBytes += data.byteLength;
                 } else {
                     try { await w.write(data); } catch {
-                        // 发生写入错误时不再盲目回源重连，而是让连接自然断开由客户端处理
                         cleanup(); if(isWS) ws.close(1011);
                     }
                 }
