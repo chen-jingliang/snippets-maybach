@@ -8,7 +8,7 @@ import { connect as $c } from 'cloudflare:sockets';
 const _ = o => $c(o);
 
 // ================= 个人极速配置 =================
-const UUID = "00000000-0000-4000-b000-000000000000"; 
+const UUID = ""; 
 
 let PIP = 'ProxyIP.CMLiussss.net';  
 let SUB = 'sub.cmliussss.net';  
